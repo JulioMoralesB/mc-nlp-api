@@ -130,6 +130,7 @@ def interpret_and_execute(data: NLPRequest):
         {data.message}
         """
         try:
+            logger.info(f"Calling Ollama chat using model {ollama_model}")
             response = ollama_client.chat(
                 model=ollama_model,
                 messages=[{"role": "user", "content": prompt}]
