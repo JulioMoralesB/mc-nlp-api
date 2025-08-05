@@ -1,27 +1,29 @@
 import ollama
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from utils.logger import get_logger
 from utils.masking import mask_ip_in_text
 import os
 import requests
-
+import time
 
 app = FastAPI()
 logger = get_logger(__name__)
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
 
-def get_ollama_info():
-    # Set the Ollama API URL from environment variable or default to localhost
-    ollama_api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
-    ollama_model = os.getenv("OLLAMA_MODEL", "llama3")
-    ollama_client = ollama.Client(host=ollama_api_url)
-    return {
-        "api_url": ollama_api_url,
-        "model": ollama_model,
-        "client": ollama_client
-    }
+    if request.url.path == "/health":
+        return await call_next(request)
 
+    logger.info(f"Received request: {request.method} {request.url}")
+    start_time = time.time()
+
+    response = await call_next(request)
+    duration = (time.time() - start_time) * 1000  # Convert to milliseconds
+    logger.info(f"Finish request: {request.method} {request.url } - Status: {response.status_code} - Time: {duration:.2f} ms")
+    
+    return response
 
 @app.get("/health")
 def health_check():
@@ -166,3 +168,14 @@ def interpret_and_execute(data: NLPRequest):
     except Exception as e:
         logger.error(f"Error interpreting request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+def get_ollama_info():
+    # Set the Ollama API URL from environment variable or default to localhost
+    ollama_api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
+    ollama_model = os.getenv("OLLAMA_MODEL", "llama3")
+    ollama_client = ollama.Client(host=ollama_api_url)
+    return {
+        "api_url": ollama_api_url,
+        "model": ollama_model,
+        "client": ollama_client
+    }
