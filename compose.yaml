@@ -3,8 +3,6 @@ services:
     image: mc-nlp-api:latest
     build: .
     container_name: mc-nlp-api
-    ports:
-      - "8002:8000"
     volumes:
       - ./.ollama:/root/.ollama
     extra_hosts:
