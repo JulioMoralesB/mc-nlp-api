@@ -1,0 +1,18 @@
+services:
+  mc-nlp-api:
+    image: mc-nlp-api:latest
+    build: .
+    container_name: mc-nlp-api
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./.ollama:/root/.ollama
+    environment:
+      - OLLAMA_API_URL=http://host.docker.internal:11434
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
