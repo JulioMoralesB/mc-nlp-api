@@ -136,6 +136,7 @@ def interpret_and_execute(data: NLPRequest):
         - The response should be a friendly message in Spanish, acknowledging the user's message.
         - Only use this action if the input does not match any of the previous actions.
         - This action is just for chatting and does not require any additional information. You can respond with any friendly message in Spanish.
+        - You don't know who the user is, so do not use their name in the response.
 
 
         Now interpret this input:
