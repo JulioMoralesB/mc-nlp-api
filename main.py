@@ -6,8 +6,14 @@ from utils.masking import mask_ip_in_text
 import os
 import requests
 
+# Set the Ollama API URL from environment variable or default to localhost
+ollama_api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
+ollama_model = os.getenv("OLLAMA_MODEL", "llama3")
+
 app = FastAPI()
 logger = get_logger(__name__)
+
+ollama_client = ollama.Client(host=ollama_api_url)
 
 @app.get("/health")
 def health_check():
@@ -55,12 +61,6 @@ def interpret_and_execute(data: NLPRequest):
     This function uses Ollama's chat model to convert natural language instructions into structured JSON commands.
     It handles specific actions like adding an IP to a security list or providing instructions on how to find an IP address.
     """
-    # Set the Ollama API URL from environment variable or default to localhost
-    ollama_api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
-    ollama_client = ollama.Client(host=ollama_api_url)
-
-    ollama_model = os.getenv("OLLAMA_MODEL", "llama3")
-    
     logger.info(f"Interpreting message: {mask_ip_in_text(data.message)}")
     try:
         
