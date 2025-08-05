@@ -6,19 +6,29 @@ from utils.masking import mask_ip_in_text
 import os
 import requests
 
-# Set the Ollama API URL from environment variable or default to localhost
-ollama_api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
-ollama_model = os.getenv("OLLAMA_MODEL", "llama3")
 
 app = FastAPI()
 logger = get_logger(__name__)
 
-ollama_client = ollama.Client(host=ollama_api_url)
+
+def get_ollama_info():
+    # Set the Ollama API URL from environment variable or default to localhost
+    ollama_api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
+    ollama_model = os.getenv("OLLAMA_MODEL", "llama3")
+    ollama_client = ollama.Client(host=ollama_api_url)
+    return {
+        "api_url": ollama_api_url,
+        "model": ollama_model,
+        "client": ollama_client
+    }
+
 
 @app.get("/health")
 def health_check():
     logger.info("Health check endpoint called.")
     # Call the Ollama API to check if it's running
+    ollama_info = get_ollama_info()
+    ollama_api_url = ollama_info["api_url"]
     try:
         logger.info(f"Checking health of Ollama API at {ollama_api_url}")
         response = requests.get(f"{ollama_api_url}")
@@ -63,7 +73,9 @@ def interpret_and_execute(data: NLPRequest):
     """
     logger.info(f"Interpreting message: {mask_ip_in_text(data.message)}")
     try:
-        
+        ollama_info = get_ollama_info()
+        ollama_client = ollama_info["client"]
+        ollama_model = ollama_info["model"]
         prompt = f"""
         You are a Discord Bot that converts natural language instructions into JSON commands.
 
