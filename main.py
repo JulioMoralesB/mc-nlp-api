@@ -25,15 +25,15 @@ def get_ollama_info():
 
 @app.get("/health")
 def health_check():
-    logger.info("Health check endpoint called.")
+    logger.debug("Health check endpoint called.")
     # Call the Ollama API to check if it's running
     ollama_info = get_ollama_info()
     ollama_api_url = ollama_info["api_url"]
     try:
-        logger.info(f"Checking health of Ollama API at {ollama_api_url}")
+        logger.debug(f"Checking health of Ollama API at {ollama_api_url}")
         response = requests.get(f"{ollama_api_url}")
         response.raise_for_status()
-        logger.info("Ollama API is reachable.")
+        logger.debug("Ollama API is reachable.")
     except requests.RequestException as e:
         logger.error(f"Health check failed: {e}")
         raise HTTPException(status_code=500, detail="Ollama API is not reachable")
