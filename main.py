@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from utils.logger import get_logger
 from utils.masking import mask_ip_in_text
 import os
+import requests
 
 # Set the Ollama API URL from environment variable or default to localhost
 ollama_api_url = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
@@ -17,7 +18,25 @@ ollama_client = ollama.Client(host=ollama_api_url)
 @app.get("/health")
 def health_check():
     logger.info("Health check endpoint called.")
-    return {"status": "ok", "message": "API is running smoothly"}
+    # Call the Ollama API to check if it's running
+    try:
+        logger.info(f"Checking health of Ollama API at {ollama_api_url}")
+        response = requests.get(f"{ollama_api_url}")
+        response.raise_for_status()
+        logger.info("Ollama API is reachable.")
+    except requests.RequestException as e:
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(status_code=500, detail="Ollama API is not reachable")
+
+    # Return health status including dependencies
+    return {
+        "status": "ok",
+        "message": "API is running smoothly",
+        "dependencies": {
+            "ollama": "reachable"
+        }
+    }
+
 
 class NLPRequest(BaseModel):
     message: str
